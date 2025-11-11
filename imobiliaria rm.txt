@@ -1,0 +1,77 @@
+import csv
+
+class Imovel:
+    def __init__(self, tipo, quartos=1, garagem=False, vagas_estudio=0, possui_criancas=True):
+        self.tipo = tipo.lower()
+        self.quartos = quartos
+        self.garagem = garagem
+        self.vagas_estudio = vagas_estudio
+        self.possui_criancas = possui_criancas
+        self.mensalidade = self.calcular_mensalidade()
+        self.valor_contrato = 2000.0
+
+    def calcular_mensalidade(self):
+        # Valores base
+        if self.tipo == "apartamento":
+            valor = 700
+            if self.quartos == 2:
+                valor += 200
+            if self.garagem:
+                valor += 300
+            # Desconto se não tem crianças
+            if not self.possui_criancas:
+                valor *= 0.95
+        elif self.tipo == "casa":
+            valor = 900
+            if self.quartos == 2:
+                valor += 250
+            if self.garagem:
+                valor += 300
+        elif self.tipo == "estudio":
+            valor = 1200
+            if self.vagas_estudio >= 2:
+                valor += 250  # Valor para 2 vagas
+                if self.vagas_estudio > 2:
+                    valor += (self.vagas_estudio - 2) * 60
+        else:
+            raise ValueError("Tipo de imóvel inválido")
+        return valor
+
+    def gerar_orcamento(self):
+        print("\n--- ORÇAMENTO DE IMÓVEL ---")
+        print(f"Tipo: {self.tipo.capitalize()}")
+        print(f"Quartos: {self.quartos}")
+        if self.tipo != "estudio":
+            print(f"Garagem: {'Sim' if self.garagem else 'Não'}")
+        else:
+            print(f"Vagas de estacionamento: {self.vagas_estudio}")
+        print(f"Valor mensal: R$ {self.mensalidade:.2f}")
+        print(f"Valor do contrato: R$ {self.valor_contrato:.2f} (parcelável em até 5x de R$ {self.valor_contrato/5:.2f})")
+
+    def gerar_csv_parcelas(self, nome_arquivo="parcelas_orcamento.csv"):
+        parcelas = [self.mensalidade for _ in range(12)]
+        with open(nome_arquivo, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Parcela", "Valor (R$)"])
+            for i, valor in enumerate(parcelas, start=1):
+                writer.writerow([i, f"{valor:.2f}"])
+        print(f"Arquivo CSV gerado: {nome_arquivo}")
+
+
+# -------------------------------
+# Exemplo de uso:
+
+# Criando um apartamento com 2 quartos, garagem e sem crianças
+imovel1 = Imovel(tipo="apartamento", quartos=2, garagem=True, possui_criancas=False)
+imovel1.gerar_orcamento()
+imovel1.gerar_csv_parcelas()
+
+# Criando uma casa com 2 quartos e garagem
+imovel2 = Imovel(tipo="casa", quartos=2, garagem=True)
+imovel2.gerar_orcamento()
+imovel2.gerar_csv_parcelas("parcelas_casa.csv")
+
+# Criando um estúdio com 3 vagas
+imovel3 = Imovel(tipo="estudio", vagas_estudio=3)
+imovel3.gerar_orcamento()
+imovel3.gerar_csv_parcelas("parcelas_estudio.csv")
